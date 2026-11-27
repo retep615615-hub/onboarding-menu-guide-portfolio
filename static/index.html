@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>온보딩 메뉴 길잡이</title>
+<link rel="icon" href="data:,">
+<style>
+  :root {
+    --ink: #1f2a37; --muted: #5b6776; --line: #dfe4ea; --bg: #f6f7f9; --card: #ffffff;
+    --main: #1d5e8c; --main-soft: #e7f0f7; --green: #2f7d4f; --green-soft: #e8f4ec;
+    --warn: #8a5a00; --warn-soft: #fff6dd; --hl: #fff1c7; --ai: #5b3fa8; --ai-soft: #f1edfb;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font-family: "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+         font-size: 15px; line-height: 1.55; padding-bottom: 72px; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 20px 16px; }
+  header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+  h1 { margin: 0; font-size: 24px; color: var(--green); }
+  .sub { color: var(--muted); margin: 2px 0 0; }
+  .status { font-size: 13px; color: var(--muted); background: var(--card); border: 1px solid var(--line);
+            border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
+  form.ask { display: flex; gap: 8px; }
+  input[type=text] { flex: 1; min-width: 0; font: inherit; font-size: 17px; padding: 12px 14px; border: 1px solid var(--line);
+                     border-radius: 10px; background: var(--card); }
+  button.go { font: inherit; font-weight: 700; padding: 0 20px; border: 0; border-radius: 10px;
+              background: var(--green); color: #fff; cursor: pointer; }
+  .examples { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 4px; }
+  .examples button { font: inherit; font-size: 13px; border: 1px solid var(--line); background: var(--card);
+                     border-radius: 999px; padding: 4px 10px; cursor: pointer; color: var(--muted); }
+  .privacy { color: var(--muted); font-size: 12px; margin: 6px 0 0; line-height: 1.5; }
+  .privacy button { font: inherit; font-size: 12px; border: 0; background: none; color: var(--main); cursor: pointer; padding: 0 2px; text-decoration: underline; }
+  .privacy .more { display: none; margin-top: 2px; }
+  .privacy.open .more { display: block; }
+  #chatPrivacy { font-size: 11px; color: var(--muted); padding: 0 10px 8px; background: var(--card); line-height: 1.4; }
+  .meta { color: var(--muted); font-size: 13px; margin: 12px 0 6px; min-height: 20px; }
+  h2 { font-size: 16px; margin: 22px 0 8px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
+  .menu { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+  .menu .name { font-weight: 700; font-size: 16px; }
+  .menu .path, .menu .who { color: var(--muted); font-size: 13px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; color: var(--ai); background: var(--ai-soft);
+           border-radius: 6px; padding: 0 6px; margin-left: 4px; vertical-align: middle; }
+  a.open { display: inline-block; text-decoration: none; background: var(--main); color: #fff; font-weight: 700;
+           padding: 8px 14px; border-radius: 8px; white-space: nowrap; font-size: 14px; }
+  a.open.sm { padding: 4px 10px; font-size: 13px; }
+  .notice { background: var(--warn-soft); border: 1px solid #f0dca0; color: var(--warn); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
+  .aisay { background: var(--ai-soft); border: 1px solid #d9cff3; color: var(--ai); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; }
+  .dash { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 8px; }
+  .dcard { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; transition: box-shadow .2s; }
+  .dcard h3 { margin: 0 0 10px; font-size: 17px; }
+  .dcard .links { display: flex; flex-wrap: wrap; gap: 6px; }
+  .dcard .nolink { font-size: 13px; color: var(--muted); border: 1px dashed var(--line); border-radius: 8px; padding: 4px 10px; }
+  .dcard.hl { border: 2px solid var(--green); background: var(--green-soft); box-shadow: 0 4px 14px rgba(47,125,79,.18); }
+  .dcard.dim { opacity: .45; }
+  .reset { font: inherit; font-size: 13px; border: 0; background: none; color: var(--main); cursor: pointer; text-decoration: underline; padding: 0 4px; }
+  .empty { color: var(--muted); font-size: 13px; }
+  .err { background: #fdeaea; color: #8a1c1c; border-radius: 10px; padding: 12px; }
+  footer { position: fixed; left: 0; right: 0; bottom: 0; background: var(--ink); color: #fff;
+           text-align: center; font-size: 13px; padding: 10px 12px; z-index: 5; }
+
+  /* 오른쪽 아래 동그라미 버튼 + 겹쳐 뜨는 작은 챗봇 창 */
+  #chatBtn { position: fixed; right: 22px; bottom: 58px; width: 62px; height: 62px; border-radius: 50%; border: 0;
+             background: var(--main); color: #fff; font-size: 28px; cursor: pointer; z-index: 20;
+             box-shadow: 0 6px 18px rgba(0,0,0,.25); }
+  #chatBtn:hover { transform: scale(1.05); }
+  #chatBtn .lbl { position: absolute; right: 70px; top: 50%; transform: translateY(-50%); white-space: nowrap;
+                  background: var(--ink); color: #fff; font-size: 13px; padding: 4px 10px; border-radius: 8px; opacity: .92; }
+  #chat { position: fixed; right: 22px; bottom: 132px; width: 380px; height: 540px; max-height: calc(100vh - 150px);
+          background: var(--card); border: 1px solid var(--line); border-radius: 16px; z-index: 30;
+          box-shadow: 0 12px 36px rgba(0,0,0,.28); display: none; flex-direction: column; overflow: hidden; }
+  #chat.show { display: flex; }
+  #chat .bar { background: var(--main); color: #fff; padding: 10px 12px; display: flex; align-items: center; gap: 8px; cursor: move; user-select: none; }
+  #chat .bar b { flex: 1; font-size: 15px; }
+  #chat .bar button { border: 0; background: rgba(255,255,255,.18); color: #fff; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; font-size: 15px; }
+  #chatLog { flex: 1; overflow-y: auto; padding: 12px; background: var(--bg); }
+  .msg { margin-bottom: 10px; display: flex; }
+  .msg.me { justify-content: flex-end; }
+  .bubble { max-width: 88%; border-radius: 12px; padding: 8px 11px; font-size: 14px; background: var(--card); border: 1px solid var(--line); }
+  .msg.me .bubble { background: var(--main); color: #fff; border-color: var(--main); }
+  .bubble .mini { border-top: 1px dashed var(--line); padding-top: 6px; margin-top: 6px; display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+  .bubble .mini .tip { font-size: 12px; }
+  .bubble ol { margin: 4px 0 0; padding-left: 18px; }
+  .bubble .unk { color: var(--warn); }
+  #chatEx { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px 10px 0; background: var(--card); border-top: 1px solid var(--line); }
+  #chatEx button { font: inherit; font-size: 12px; border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 2px 8px; cursor: pointer; color: var(--muted); }
+  #chatForm { display: flex; gap: 6px; padding: 8px 10px 10px; background: var(--card); }
+  #chatForm input { font-size: 15px; padding: 9px 11px; }
+  #chatForm button { font: inherit; font-weight: 700; border: 0; border-radius: 10px; background: var(--main); color: #fff; padding: 0 14px; cursor: pointer; }
+
+  @media (max-width: 560px) {
+    .menu { flex-direction: column; align-items: flex-start; }
+    header { flex-direction: column; }
+    #chat { right: 8px; left: 8px; width: auto; bottom: 126px; height: 70vh; }
+    #chatBtn .lbl { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1 id="appTitle">🌱 온보딩 메뉴 길잡이</h1>
+      <p class="sub" id="appSub">궁금한 건 평소 말로 물어보세요. 바로 찾아 드리고, 못 찾으면 AI 챗봇이 이어서 도와드려요.</p>
+    </div>
+    <div class="status" id="status">질문 기록: 확인 중…</div>
+  </header>
+
+  <form class="ask" id="askForm" autocomplete="off">
+    <input type="text" id="q" placeholder="무엇이 궁금하세요? 예: 손님 와, 출장 가" aria-label="질문">
+    <button class="go" type="submit">찾기</button>
+  </form>
+  <div class="examples" id="examples"></div>
+  <div class="privacy" id="privacy" hidden><span id="privacyText"></span> <button type="button" id="privacyMore">자세히</button><div class="more" id="privacyDetail"></div></div>
+
+  <div class="meta" id="meta"></div>
+  <div id="result"></div>
+  <div class="dash" id="dash"></div>
+</div>
+
+<button id="chatBtn" type="button" aria-label="AI 챗봇 열기">💬<span class="lbl" id="chatLbl">AI 챗봇</span></button>
+<section id="chat" role="dialog" aria-label="AI 챗봇">
+  <div class="bar" id="chatBar"><b id="chatTitle">메뉴 길잡이 챗봇</b>
+    <button type="button" id="chatMin" title="작게">—</button><button type="button" id="chatClose" title="닫기">✕</button></div>
+  <div id="chatLog"></div>
+  <div id="chatEx"></div>
+  <form id="chatForm" autocomplete="off">
+    <input type="text" id="cq" placeholder="찾는 메뉴를 평소 말로. 예: 법카" aria-label="챗봇 질문">
+    <button type="submit">보내기</button>
+  </form>
+  <div id="chatPrivacy" hidden></div>
+</section>
+
+<footer>링크를 누르는 것은 여러분입니다. 길잡이는 아무것도 대신 신청하지 않습니다.</footer>
+
+<script>
+  var chatTitle = "메뉴 길잡이 챗봇";
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function $(id) { return document.getElementById(id); }
+
+  function openLink(menu, small) {
+    if (!menu) return "";
+    return '<a class="open' + (small ? " sm" : "") + '" data-mid="' + esc(menu.menu_id) + '" href="' + esc(menu.url) + '" target="_blank" rel="noopener">' +
+      (small ? esc(menu.menu_name) + " ↗" : "열기 ↗") + "</a>";
+  }
+  function aiBadge(m) { return m && m.ai ? '<span class="badge">🤖 AI 추천</span>' : ""; }
+
+  function menuCard(m) {
+    return '<div class="card menu"><div>' +
+      '<div class="name">' + esc(m.menu_name) + aiBadge(m) + "</div>" +
+      '<div class="path">' + esc(m.path) + "</div>" +
+      "<div>" + esc(m.description) + "</div>" +
+      '<div class="who">담당: ' + esc(m.owner_dept) + (m.contact ? " · " + esc(m.contact) : "") + "</div>" +
+      "</div>" + openLink(m) + "</div>";
+  }
+
+  /* ---------- 메인: 상황 대시보드(제목 + 링크 버튼) ---------- */
+  var dashboards = [];
+
+  function dashCard(d, cls) {
+    var links = d.steps.map(function (st) {
+      var label = st.title + (st.site && st.site !== "전체" ? " (" + st.site + ")" : "");
+      if (!st.menu) return '<span class="nolink">' + esc(label) + "</span>";
+      return '<a class="open sm" data-mid="' + esc(st.menu.menu_id) + '" href="' + esc(st.menu.url) + '" target="_blank" rel="noopener" title="' +
+        esc(st.menu.menu_name + " · " + st.owner_dept) + '">' + esc(label) + " ↗</a>";
+    }).join("");
+    return '<div class="dcard ' + (cls || "") + '"><h3>' + esc(d.name) + '</h3><div class="links">' + links + "</div></div>";
+  }
+
+  function drawDash(found) {
+    var ids = (found || []).map(function (s) { return s.situation_id; });
+    var first = dashboards.filter(function (d) { return ids.indexOf(d.situation_id) >= 0; });
+    var rest = dashboards.filter(function (d) { return ids.indexOf(d.situation_id) < 0; });
+    $("dash").innerHTML = first.map(function (d) { return dashCard(d, "hl"); }).join("") +
+      rest.map(function (d) { return dashCard(d, ids.length ? "dim" : ""); }).join("");
+  }
+
+  function loadDashboards() {
+    fetch("/api/dashboards").then(function (r) { return r.json(); }).then(function (r) {
+      if (r.error) { $("result").innerHTML = '<div class="err">' + esc(r.error) + "</div>"; return; }
+      dashboards = r.situations || [];
+      drawDash([]);
+    }).catch(function () { $("result").innerHTML = '<div class="err">길잡이 서버에 연결할 수 없어요. 명령 창에서 py app.py가 켜져 있는지 확인해 주세요.</div>'; });
+  }
+
+  function resetMain() {
+    $("meta").textContent = ""; $("result").innerHTML = ""; $("q").value = ""; drawDash([]);
+  }
+
+  // 큰 검색창: 규칙으로만 찾는다(AI 없음). 못 찾으면 챗봇 창을 열어 같은 질문을 넘긴다.
+  function ask(q) {
+    q = (q || "").trim();
+    if (!q) { resetMain(); return; }
+    var t0 = performance.now();
+    fetch("/api/ask?q=" + encodeURIComponent(q) + "&mode=main")
+      .then(function (res) { return res.json(); })
+      .then(function (r) {
+        var ms = Math.round(performance.now() - t0);
+        if (r.error) { $("result").innerHTML = '<div class="err">' + esc(r.error) + "</div>"; return; }
+        if (r.type === "to_chat") {
+          $("meta").innerHTML = "“" + esc(q) + "” · 바로 찾지 못해서 💬 AI 챗봇에게 물어봤어요 →";
+          $("result").innerHTML = "";
+          drawDash([]);
+          openChat();
+          chatAsk(q);
+          return;
+        }
+        $("meta").innerHTML = "“" + esc(q) + "” · " + (ms / 1000).toFixed(2) + "초 만에 찾음 <button class='reset' type='button' onclick='resetMain()'>전체 보기</button>";
+        // 맞는 대시보드가 있으면 대시보드를 맨 앞에 강조하고, 없을 때만 메뉴 카드를 보여 준다
+        var hasDash = r.situations && r.situations.length;
+        $("result").innerHTML = (!hasDash && r.menus && r.menus.length) ? "<h2>🔍 찾은 메뉴</h2>" + r.menus.map(menuCard).join("") : "";
+        drawDash(r.situations);
+      })
+      .catch(function () { $("result").innerHTML = '<div class="err">길잡이 서버에 연결할 수 없어요. 명령 창에서 py app.py가 켜져 있는지 확인해 주세요.</div>'; });
+  }
+
+  $("askForm").onsubmit = function (e) { e.preventDefault(); ask($("q").value); };
+
+  /* ---------- 오른쪽 아래 챗봇 창: 메뉴 찾기 ---------- */
+  function addMsg(who, html) {
+    var d = document.createElement("div");
+    d.className = "msg " + who;
+    d.innerHTML = '<div class="bubble">' + html + "</div>";
+    $("chatLog").appendChild(d);
+    $("chatLog").scrollTop = $("chatLog").scrollHeight;
+    return d;
+  }
+
+  function chatReply(r) {
+    if (r.error) return '<span class="unk">' + esc(r.error) + "</span>";
+    var html = "";
+    if (r.type === "unknown") {
+      html += '<span class="unk">🙂 ' + esc(r.message) + "</span>";
+      if (r.llm_error) html += '<div class="tip">(사내 AI 연결 안 됨: ' + esc(r.llm_error) + ")</div>";
+      return html;
+    }
+    html += r.source === "ai" ? "🤖 " + esc(r.message) : "이렇게 찾았어요. 링크는 직접 눌러 주세요.";
+    (r.situations || []).forEach(function (s) {
+      html += '<div class="mini" style="display:block"><b>📋 ' + esc(s.name) + "</b> 이 순서로 하세요<ol>";
+      s.steps.forEach(function (st) {
+        html += "<li>" + esc(st.title) + (st.site && st.site !== "전체" ? " (" + esc(st.site) + ")" : "") + " " + openLink(st.menu, true) + "</li>";
+      });
+      html += "</ol></div>";
+    });
+    (r.menus || []).forEach(function (m) {
+      html += '<div class="mini"><div><b>' + esc(m.menu_name) + "</b>" + aiBadge(m) +
+        '<div class="tip">' + esc(m.path) + " · " + esc(m.owner_dept) + "</div></div>" + openLink(m, false) + "</div>";
+    });
+    return html;
+  }
+
+  function chatAsk(q) {
+    q = (q || "").trim();
+    if (!q) { $("cq").focus(); return; }
+    addMsg("me", esc(q));
+    var wait = addMsg("bot", "찾고 있어요…");
+    fetch("/api/ask?q=" + encodeURIComponent(q) + "&mode=chat")
+      .then(function (res) { return res.json(); })
+      .then(function (r) { wait.querySelector(".bubble").innerHTML = chatReply(r); $("chatLog").scrollTop = $("chatLog").scrollHeight; })
+      .catch(function () { wait.querySelector(".bubble").innerHTML = '<span class="unk">서버에 연결할 수 없어요.</span>'; });
+    $("cq").value = "";
+  }
+
+  function openChat() {
+    $("chat").classList.add("show");
+    if (!$("chatLog").children.length) {
+      addMsg("bot", "안녕하세요, " + esc(chatTitle) + "예요. 메뉴 이름을 몰라도 괜찮아요. 평소 말로 물어보세요.<div class='tip'>예: \"법카 어디서 신청해?\", \"손님 와\"</div>");
+    }
+    $("cq").focus();
+  }
+  $("chatBtn").onclick = function () { $("chat").classList.contains("show") ? $("chat").classList.remove("show") : openChat(); };
+  $("chatMin").onclick = function () { $("chat").classList.remove("show"); };
+  $("chatClose").onclick = function () { $("chat").classList.remove("show"); $("chatLog").innerHTML = ""; };
+  $("chatForm").onsubmit = function (e) { e.preventDefault(); chatAsk($("cq").value); };
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") $("chat").classList.remove("show"); });
+
+  // 창 윗줄을 끌어서 옮기기(PIP처럼)
+  (function () {
+    var box = $("chat"), sx, sy, bx, by, moving = false;
+    $("chatBar").addEventListener("pointerdown", function (e) {
+      if (e.target.tagName === "BUTTON" || window.innerWidth <= 560) return;
+      var r = box.getBoundingClientRect();
+      moving = true; sx = e.clientX; sy = e.clientY; bx = r.left; by = r.top;
+      box.style.right = "auto"; box.style.bottom = "auto"; box.style.left = bx + "px"; box.style.top = by + "px";
+      $("chatBar").setPointerCapture(e.pointerId);
+    });
+    $("chatBar").addEventListener("pointermove", function (e) {
+      if (!moving) return;
+      var x = Math.min(Math.max(0, bx + e.clientX - sx), window.innerWidth - 120);
+      var y = Math.min(Math.max(0, by + e.clientY - sy), window.innerHeight - 60);
+      box.style.left = x + "px"; box.style.top = y + "px";
+    });
+    $("chatBar").addEventListener("pointerup", function () { moving = false; });
+  })();
+
+  /* ---------- 처음 열 때 ---------- */
+  fetch("/api/status").then(function (r) { return r.json(); }).then(function (s) {
+    $("status").textContent = "질문 기록: " + (s.log === "켬" ? "켬(익명)" : s.log) + " · 사내 AI: " + s.llm;
+    if (s.log_notice) {
+      $("privacyText").textContent = s.log_notice;
+      $("privacyDetail").textContent = s.log_notice_detail || "";
+      $("privacyMore").hidden = !s.log_notice_detail;
+      $("privacy").hidden = false;
+      $("chatPrivacy").textContent = "🔒 익명으로 저장되어 개선·통계에만 쓰여요. 평가에는 반영되지 않아요. 개인정보는 적지 말아 주세요.";
+      $("chatPrivacy").hidden = false;
+    }
+    if (s.app_title) { $("appTitle").textContent = "🌱 " + s.app_title; document.title = s.app_title; }
+    if (s.app_subtitle) $("appSub").textContent = s.app_subtitle;
+    if (s.chat_title) { chatTitle = s.chat_title; $("chatTitle").textContent = s.chat_title; $("chatLbl").textContent = s.chat_title; }
+    (s.examples || []).forEach(function (ex) {
+      var b = document.createElement("button");
+      b.type = "button"; b.textContent = ex;
+      b.onclick = function () { $("q").value = ex; ask(ex); };
+      $("examples").appendChild(b);
+    });
+    (s.chat_examples || []).forEach(function (ex) {
+      var b = document.createElement("button");
+      b.type = "button"; b.textContent = ex;
+      b.onclick = function () { chatAsk(ex); };
+      $("chatEx").appendChild(b);
+    });
+  }).catch(function () { $("status").textContent = "서버 연결 안 됨"; });
+
+  $("privacyMore").onclick = function () { $("privacy").classList.toggle("open"); this.textContent = $("privacy").classList.contains("open") ? "접기" : "자세히"; };
+
+  // [열기]를 누른 메뉴만 기록한다(기록이 꺼져 있으면 서버가 무시한다). 링크는 그대로 열린다.
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest("a.open[data-mid]");
+    if (!a) return;
+    var screen = a.closest("#chat") ? "chat" : "main";
+    fetch("/api/click?menu_id=" + encodeURIComponent(a.getAttribute("data-mid")) + "&screen=" + screen, { keepalive: true }).catch(function () {});
+  });
+
+  loadDashboards();  // 첫 화면에 상황 대시보드를 바로 보여 준다
+</script>
+</body>
+</html>
